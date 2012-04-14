@@ -1,0 +1,46 @@
+#!/bin/sh
+
+SOPCAST=sp-sc-auth
+PLAYER=mplayer
+CHANNEL=50970
+# 121352 卫视体育台湾
+# 123815 纬来
+PORT=8908
+
+test_port ()
+{
+    lsof -i TCP:$PORT > /dev/null
+    if [ $? -ne 0 ]; then
+	return 1
+    fi
+    return 0
+}
+
+case "$1" in
+    start)
+	unset http_proxy
+	ps -C $SOPCAST -o pid= > /dev/null
+	if [ $? -ne 0 ]; then
+	    if [ -n "$2" ]; then
+		CHANNEL="$2"
+	    fi
+	    $SOPCAST sop://broker.sopcast.com:3912/$CHANNEL 3908 $PORT > /dev/null &
+	    sleep 10
+	    test_port || sleep 5
+	    test_port || sleep 5
+	    test_port || sleep 5
+	    test_port || exit 1
+	fi
+	
+	$PLAYER -cache 4096 -cache-min 50 http://localhost:$PORT/tv.asf
+	;;
+    stop)
+	pid=$(ps -C $SOPCAST -o pid=)
+	if [ $? -eq 0 ]; then
+	    kill $pid
+	fi
+	;;
+    *)
+	echo "Usage: $0 {start channel|stop}"
+esac
+
