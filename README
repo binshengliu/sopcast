@@ -1,0 +1,9 @@
+My linux sopcast wrapper.
+
+Use example:
+
+Start espn:
+sopcast start 50970
+
+Stop sopcast:
+sopcast stop
